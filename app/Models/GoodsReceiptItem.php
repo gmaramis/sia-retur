@@ -26,34 +26,36 @@ class GoodsReceiptItem extends Model
         'expiry_date' => 'date',
     ];
 
-    protected static function booted(): void
-    {
-        static::saving(function (GoodsReceiptItem $item): void {
-            $item->attributes['subtotal'] = round(
-                ((float) $item->received_quantity) * ((float) $item->unit_price),
-                2
-            );
-        });
+   protected static function booted(): void
+{
+    static::saving(function (GoodsReceiptItem $item): void {
+        $item->attributes['subtotal'] = round(
+            ((float) $item->received_quantity) * ((float) $item->unit_price),
+            2
+        );
+    });
 
-        static::saved(function (GoodsReceiptItem $item): void {
+    static::created(function (GoodsReceiptItem $item): void {
 
-            $product = $item->product;
-
-            if (! $product) {
-                return;
-            }
-
-            $product->increment(
-                'stock_ready',
-                (int) $item->good_quantity
-            );
-
-            $product->increment(
-                'stock_hold',
-                (int) $item->hold_quantity
-            );
-        });
+    if ($item->product) {
+        $item->product->recalculateStock();
     }
+});
+
+static::updated(function (GoodsReceiptItem $item): void {
+
+    if ($item->product) {
+        $item->product->recalculateStock();
+    }
+});
+
+static::deleted(function (GoodsReceiptItem $item): void {
+
+    if ($item->product) {
+        $item->product->recalculateStock();
+    }
+});
+}
 
     public function goodsReceipt(): BelongsTo
     {

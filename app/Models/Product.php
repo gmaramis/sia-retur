@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\GoodsReceiptItem;
 
 class Product extends Model
 {
@@ -37,5 +38,24 @@ class Product extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function recalculateStock(): void
+    {
+        $ready = GoodsReceiptItem::where('product_id', $this->id)
+            ->sum('good_quantity');
+
+        $hold = GoodsReceiptItem::where('product_id', $this->id)
+            ->sum('hold_quantity');
+
+        $this->update([
+            'stock_ready' => $ready,
+            'stock_hold' => $hold,
+        ]);
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

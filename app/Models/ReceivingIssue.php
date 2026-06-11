@@ -32,4 +32,13 @@ class ReceivingIssue extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getFilamentTitle(): string
+{
+    return ($this->product?->name ?? 'Produk')
+        . ' - '
+        . $this->issue_type
+        . ' - Qty '
+        . $this->quantity;
+}
 }
