@@ -15,10 +15,27 @@ class Product extends Model
         'minimum_stock',
         'shelf_life_days',
         'default_purchase_price',
+        'stock_ready',
+        'stock_hold'
     ];
 
     public function purchaseOrderItems(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    public function goodsReceiptItems()
+    {
+        return $this->hasMany(GoodsReceiptItem::class);
+    }
+
+    public function receivingIssues()
+    {
+        return $this->hasMany(ReceivingIssue::class);
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
     }
 }

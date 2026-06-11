@@ -22,7 +22,17 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Data Master';
+
+    protected static ?string $navigationLabel = 'Barang';
+
+    protected static ?string $modelLabel = 'Barang';
+
+    protected static ?string $pluralModelLabel = 'Barang';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {
@@ -36,6 +46,7 @@ class ProductResource extends Resource
                     ->label('Nama Barang')
                     ->required(),
                 Select::make('category')
+                    ->label('Kategori')
                     ->options([
                         'Beras' => 'Beras',
                         'Gula' => 'Gula',
@@ -47,13 +58,14 @@ class ProductResource extends Resource
                         'Lainnya' => 'Lainnya',
                     ]),
                 Select::make('unit')
+                    ->label('Satuan')
                     ->options([
-                        'pcs' => 'pcs',
-                        'kg' => 'kg',
-                        'liter' => 'liter',
-                        'dus' => 'dus',
-                        'karung' => 'karung',
-                        'pack' => 'pack',
+                        'pcs' => 'Pcs',
+                        'kg' => 'Kg',
+                        'liter' => 'Liter',
+                        'dus' => 'Dus',
+                        'karung' => 'Karung',
+                        'pack' => 'Pack',
                     ])
                     ->default('pcs'),
                 TextInput::make('minimum_stock')
@@ -61,12 +73,22 @@ class ProductResource extends Resource
                     ->numeric()
                     ->default(0),
                 TextInput::make('shelf_life_days')
-                    ->label('Umur Simpan Hari')
+                    ->label('Umur Simpan (Hari)')
                     ->numeric(),
                 TextInput::make('default_purchase_price')
                     ->label('Harga Beli Default')
                     ->numeric()
                     ->prefix('Rp'),
+                TextInput::make('stock_ready')
+                    ->label('Stok Ready')
+                    ->numeric()
+                    ->default(0)
+                    ->disabled(),
+                TextInput::make('stock_hold')
+                    ->label('Stok Hold')
+                    ->numeric()
+                    ->default(0)
+                    ->disabled(),
             ]);
     }
 
@@ -75,21 +97,32 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('code')
+                    ->label('Kode')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('category')
+                    ->label('Kategori')
                     ->badge(),
-                TextColumn::make('unit'),
+                TextColumn::make('unit')
+                    ->label('Satuan'),
                 TextColumn::make('minimum_stock')
+                    ->label('Stok Minimal')
                     ->sortable(),
                 TextColumn::make('default_purchase_price')
+                    ->label('Harga Beli')
                     ->money('IDR'),
                 TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('stock_ready')
+                    ->label('stock_ready'),
+                TextColumn::make('stock_hold')
+                    ->label('stock_hold')
             ])
             ->filters([
                 //

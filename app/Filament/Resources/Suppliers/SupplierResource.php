@@ -24,18 +24,28 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Data Master';
+
+    protected static ?string $navigationLabel = 'Pemasok';
+
+    protected static ?string $modelLabel = 'Pemasok';
+
+    protected static ?string $pluralModelLabel = 'Pemasok';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('code')
-                    ->label('Kode Supplier')
+                    ->label('Kode Pemasok')
                     ->required()
                     ->unique(ignoreRecord: true),
                 TextInput::make('name')
-                    ->label('Nama Supplier')
+                    ->label('Nama Pemasok')
                     ->required(),
                 TextInput::make('phone')
                     ->label('Telepon'),
@@ -53,16 +63,21 @@ class SupplierResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('code')
+                    ->label('Kode')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('phone')
+                    ->label('Telepon')
                     ->searchable(),
                 IconColumn::make('is_active')
+                    ->label('Aktif')
                     ->boolean(),
                 TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable(),
             ])

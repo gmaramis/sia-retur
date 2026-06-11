@@ -40,4 +40,9 @@ class PurchaseOrder extends Model
             'total_amount' => $this->items()->sum('subtotal'),
         ]);
     }
+
+    public function goodsReceipts()
+    {
+        return $this->hasMany(GoodsReceipt::class);
+    }
 }

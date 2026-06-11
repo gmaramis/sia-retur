@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\PurchaseOrders;
+namespace App\Filament\Resources\GoodsReceipts;
 
-use App\Filament\Resources\PurchaseOrders\Pages\CreatePurchaseOrder;
-use App\Filament\Resources\PurchaseOrders\Pages\EditPurchaseOrder;
-use App\Filament\Resources\PurchaseOrders\Pages\ListPurchaseOrders;
-use App\Models\PurchaseOrder;
+use App\Filament\Resources\GoodsReceipts\Pages\CreateGoodsReceipt;
+use App\Filament\Resources\GoodsReceipts\Pages\EditGoodsReceipt;
+use App\Filament\Resources\GoodsReceipts\Pages\ListGoodsReceipts;
+use App\Models\GoodsReceipt;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -20,28 +20,31 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class PurchaseOrderResource extends Resource
+class GoodsReceiptResource extends Resource
 {
-    protected static ?string $model = PurchaseOrder::class;
+    protected static ?string $model = GoodsReceipt::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Pembelian';
+    protected static string|\UnitEnum|null $navigationGroup = 'Penerimaan';
 
-    protected static ?string $navigationLabel = 'Pesanan Pembelian';
+    protected static ?string $navigationLabel = 'Penerimaan Barang';
 
-    protected static ?string $modelLabel = 'Pesanan Pembelian';
+    protected static ?string $modelLabel = 'Penerimaan Barang';
 
-    protected static ?string $pluralModelLabel = 'Pesanan Pembelian';
+    protected static ?string $pluralModelLabel = 'Penerimaan Barang';
 
     protected static ?int $navigationSort = 1;
+
+    protected static ?string $recordTitleAttribute = 'receipt_number';
 
     public static function getStatusOptions(): array
     {
         return [
             'draft' => 'Draf',
-            'ordered' => 'Dipesan',
-            'received' => 'Diterima',
+            'checked' => 'Diperiksa',
+            'has_issue' => 'Ada Masalah',
+            'completed' => 'Selesai',
             'cancelled' => 'Dibatalkan',
         ];
     }
@@ -50,33 +53,34 @@ class PurchaseOrderResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('po_number')
-                    ->label('Nomor PO')
+                TextInput::make('receipt_number')
+                    ->label('Nomor Penerimaan')
                     ->required()
                     ->unique(ignoreRecord: true),
+                Select::make('purchase_order_id')
+                    ->label('Pesanan Pembelian')
+                    ->relationship('purchaseOrder', 'po_number')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Select::make('supplier_id')
                     ->label('Pemasok')
                     ->relationship('supplier', 'name')
-                    ->required()
                     ->searchable()
-                    ->preload(),
-                DatePicker::make('po_date')
-                    ->label('Tanggal PO')
+                    ->preload()
+                    ->required(),
+                DatePicker::make('receipt_date')
+                    ->label('Tanggal Penerimaan')
                     ->required()
                     ->default(now()),
-                DatePicker::make('expected_date')
-                    ->label('Perkiraan Tanggal Datang'),
+                TextInput::make('delivery_note_number')
+                    ->label('Nomor Surat Jalan'),
+                TextInput::make('invoice_number')
+                    ->label('Nomor Faktur'),
                 Select::make('status')
                     ->label('Status')
                     ->options(static::getStatusOptions())
                     ->default('draft'),
-                TextInput::make('total_amount')
-                    ->label('Total PO')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->default(0)
-                    ->disabled()
-                    ->dehydrated(),
                 Textarea::make('notes')
                     ->label('Catatan')
                     ->columnSpanFull(),
@@ -87,7 +91,11 @@ class PurchaseOrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('po_number')
+                TextColumn::make('receipt_number')
+                    ->label('Nomor Penerimaan')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('purchaseOrder.po_number')
                     ->label('Nomor PO')
                     ->searchable()
                     ->sortable(),
@@ -95,21 +103,14 @@ class PurchaseOrderResource extends Resource
                     ->label('Pemasok')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('po_date')
-                    ->label('Tanggal PO')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('expected_date')
-                    ->label('Perkiraan Datang')
+                TextColumn::make('receipt_date')
+                    ->label('Tanggal Penerimaan')
                     ->date()
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => static::getStatusOptions()[$state] ?? $state),
-                TextColumn::make('total_amount')
-                    ->label('Total')
-                    ->money('IDR'),
                 TextColumn::make('created_at')
                     ->label('Dibuat Pada')
                     ->dateTime()
@@ -138,9 +139,9 @@ class PurchaseOrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListPurchaseOrders::route('/'),
-            'create' => CreatePurchaseOrder::route('/create'),
-            'edit' => EditPurchaseOrder::route('/{record}/edit'),
+            'index' => ListGoodsReceipts::route('/'),
+            'create' => CreateGoodsReceipt::route('/create'),
+            'edit' => EditGoodsReceipt::route('/{record}/edit'),
         ];
     }
 }
