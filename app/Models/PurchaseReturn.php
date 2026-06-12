@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Products;
+use App\Models\Product;
 
 
 class PurchaseReturn extends Model
@@ -36,12 +36,13 @@ class PurchaseReturn extends Model
     }
 
     protected static function booted(): void
-    {
-        static::updated(function (PurchaseReturn $return) {
+{
+    static::updated(function (PurchaseReturn $return) {
 
-            if ($return->status !== 'completed') {
-                return;
-            }
+        if (
+            $return->getOriginal('status') !== 'completed'
+            && $return->status === 'completed'
+        ) {
 
             foreach ($return->items as $item) {
 
@@ -56,6 +57,7 @@ class PurchaseReturn extends Model
                     (int) $item->quantity
                 );
             }
-        });
-    }
+        }
+    });
+}
 }
