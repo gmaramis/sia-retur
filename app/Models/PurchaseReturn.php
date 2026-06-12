@@ -56,16 +56,16 @@ class PurchaseReturn extends Model
                         (int) $item->quantity
                     );
 
-                    // Catat ke Stock Movement
+                    // Catat Stock Movement
                     StockMovement::create([
-                        'product_id' => $item->product_id,
-                        'movement_date' => now(),
-                        'movement_type' => 'OUT_HOLD',
-                        'location' => 'Gudang Utama',
-                        'quantity' => (int) $item->quantity,
+                        'product_id'     => $item->product_id,
+                        'movement_date'  => now(),
+                        'movement_type'  => 'OUT_HOLD',
+                        'location'       => 'Gudang Utama',
+                        'quantity'       => (int) $item->quantity,
                         'reference_type' => 'Purchase Return',
-                        'reference_id' => $return->id,
-                        'description' => 'Barang diretur ke supplier',
+                        'reference_id'   => $return->id,
+                        'description'    => 'Barang diretur ke supplier',
                     ]);
                 }
             }
