@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\StockMovement;
 
 class GoodsReceiptItem extends Model
 {
@@ -38,7 +39,36 @@ class GoodsReceiptItem extends Model
     static::created(function (GoodsReceiptItem $item): void {
 
     if ($item->product) {
+
         $item->product->recalculateStock();
+
+        if ($item->good_quantity > 0) {
+
+            StockMovement::create([
+                'product_id' => $item->product_id,
+                'movement_date' => now(),
+                'movement_type' => 'IN_READY',
+                'location' => 'Gudang Utama',
+                'quantity' => $item->good_quantity,
+                'reference_type' => 'Goods Receipt',
+                'reference_id' => $item->goods_receipt_id,
+                'description' => 'Barang diterima dalam kondisi baik',
+            ]);
+        }
+
+        if ($item->hold_quantity > 0) {
+
+            StockMovement::create([
+                'product_id' => $item->product_id,
+                'movement_date' => now(),
+                'movement_type' => 'IN_HOLD',
+                'location' => 'Gudang Utama',
+                'quantity' => $item->hold_quantity,
+                'reference_type' => 'Goods Receipt',
+                'reference_id' => $item->goods_receipt_id,
+                'description' => 'Barang diterima dalam kondisi bermasalah',
+            ]);
+        }
     }
 });
 

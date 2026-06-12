@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Product;
-
+use App\Models\StockMovement;
 
 class PurchaseReturn extends Model
 {
@@ -18,8 +17,7 @@ class PurchaseReturn extends Model
         'status',
         'notes',
     ];
-    
-    
+
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
@@ -36,28 +34,41 @@ class PurchaseReturn extends Model
     }
 
     protected static function booted(): void
-{
-    static::updated(function (PurchaseReturn $return) {
+    {
+        static::updated(function (PurchaseReturn $return): void {
 
-        if (
-            $return->getOriginal('status') !== 'completed'
-            && $return->status === 'completed'
-        ) {
+            if (
+                $return->getOriginal('status') !== 'completed'
+                && $return->status === 'completed'
+            ) {
 
-            foreach ($return->items as $item) {
+                foreach ($return->items as $item) {
 
-                $product = $item->product;
+                    $product = $item->product;
 
-                if (! $product) {
-                    continue;
+                    if (! $product) {
+                        continue;
+                    }
+
+                    // Kurangi Stock Hold
+                    $product->decrement(
+                        'stock_hold',
+                        (int) $item->quantity
+                    );
+
+                    // Catat ke Stock Movement
+                    StockMovement::create([
+                        'product_id' => $item->product_id,
+                        'movement_date' => now(),
+                        'movement_type' => 'OUT_HOLD',
+                        'location' => 'Gudang Utama',
+                        'quantity' => (int) $item->quantity,
+                        'reference_type' => 'Purchase Return',
+                        'reference_id' => $return->id,
+                        'description' => 'Barang diretur ke supplier',
+                    ]);
                 }
-
-                $product->decrement(
-                    'stock_hold',
-                    (int) $item->quantity
-                );
             }
-        }
-    });
-}
+        });
+    }
 }
